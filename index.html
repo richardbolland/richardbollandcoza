@@ -1,85 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="icon" href="./favicon-32.png" sizes="32x32">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The internet home of Richard Bolland</title>
-<style>
-body {
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-}
-</style>
-</head>
-
-
-
-
-<body>
-
-
-  <canvas
-  style="
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    background-color: black;
-  "
-  id="rive-canvas"
-></canvas>
-
-
-
-
-<script src="https://unpkg.com/@rive-app/webgl2"></script>
-<script>
-// The layout of the graphic will adhere to
-    const layout = new rive.Layout({
-      fit: rive.Fit.Layout,
-      layoutScaleFactor: 1, // when using `Fit.Layout`. This allows you to resize the layout as needed.
-    });
-
-
-    // ---------------------------------
-    // HTML Canvas element to render to
-    const riveCanvas = document.getElementById("rive-canvas");
-
-
-    function computeSize() {
-      riveInstance.resizeDrawingSurfaceToCanvas();
+  <meta charset="utf-8" />
+  <title>The internet home of Richard Bolland</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
     }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #ffffff;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+  <script src="https://unpkg.com/@rive-app/webgl2"></script>
+</head>
+<body>
+  <canvas id="rive-canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('rive-canvas');
 
-
-    // Subscribe to window size changes and update call `resizeDrawingSurfaceToCanvas`
-    window.onresize = computeSize;
-
-
-    // Subscribe to devicePixelRatio changes and call `resizeDrawingSurfaceToCanvas`
-    window
-      .matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
-      .addEventListener("change", computeSize);
-
-
-
-
-    const riveInstance = new rive.Rive({
-      src: "richardhome.riv",
-      // Be sure to specify the correct state machine (or animation) name
-      stateMachines: "State Machine 1", // Name of the State Machine to play
-      canvas: riveCanvas,
-      artboard: "Dashboard",
-      layout: layout, // This is optional. Provides additional layout control.
+    const r = new rive.Rive({
+      src: 'richardhome.riv',
+      canvas: canvas,
       autoplay: true,
       autoBind: true,
+      stateMachines: 'State Machine 1',
+      artboard: 'Dashboard',
+      layout: new rive.Layout({
+        fit: rive.Fit.contain,        // contain, cover, or fill depending on your preference
+        alignment: rive.Alignment.center
+      }),
       onLoad: () => {
-        // Prevent a blurry canvas by using the device pixel ratio
-        riveInstance.resizeDrawingSurfaceToCanvas();
-      },
+        // Bind trigger if using ViewModel
+        const vmi = r.viewModelInstance;
+        if (vmi) {
+          const trigProperty = vmi.trigger('trig');
+          if (trigProperty && trigProperty.on) {
+            trigProperty.on(() => {
+              navigator.clipboard.writeText('richard@studiobo.io')
+                .catch(err => console.error('Clipboard error:', err));
+            });
+          }
+        }
+
+        // Ensure canvas is crisp
+        r.resizeDrawingSurfaceToCanvas();
+      }
     });
 
-
-</script>
+    // Keep canvas sharp on resize and DPI changes
+    function resize() {
+      r.resizeDrawingSurfaceToCanvas();
+    }
+    window.addEventListener('resize', resize);
+    matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
+      .addEventListener('change', resize);
+  </script>
 </body>
 </html>
