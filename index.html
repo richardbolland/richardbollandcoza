@@ -1,69 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>The internet home of Richard Bolland</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #ffffff;
-    }
-    canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-  </style>
-  <script src="https://unpkg.com/@rive-app/webgl2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RB</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+</style>
 </head>
+
 <body>
-  <canvas id="rive-canvas"></canvas>
-  <script>
-    const canvas = document.getElementById('rive-canvas');
+  <canvas
+  style="
+    position: absolute;
+    height: 100%;
+    width: 100%;
+  "
+  id="rive-canvas"
+></canvas>
 
-    const r = new rive.Rive({
-      src: 'richardhome.riv',
-      canvas: canvas,
-      autoplay: true,
-      autoBind: true,
-      stateMachines: 'State Machine 1',
-      artboard: 'Dashboard',
-      layout: new rive.Layout({
-        fit: rive.Fit.contain,        // contain, cover, or fill depending on your preference
-        alignment: rive.Alignment.center
-      }),
-      onLoad: () => {
-        // Bind trigger if using ViewModel
-        const vmi = r.viewModelInstance;
-        if (vmi) {
-          const trigProperty = vmi.trigger('trig');
-          if (trigProperty && trigProperty.on) {
-            trigProperty.on(() => {
-              navigator.clipboard.writeText('richard@studiobo.io')
-                .catch(err => console.error('Clipboard error:', err));
-            });
-          }
-        }
+<script src="https://unpkg.com/@rive-app/webgl2"></script>
+<script>
+// The layout of the graphic will adhere to
+const layout = new rive.Layout({
+  fit: rive.Fit.Layout,
+  layoutScaleFactor: 1, // when using `Fit.Layout`. This allows you to resize the layout as needed.
+});
 
-        // Ensure canvas is crisp
-        r.resizeDrawingSurfaceToCanvas();
-      }
-    });
+// ---------------------------------
+// HTML Canvas element to render to
+const riveCanvas = document.getElementById("rive-canvas");
 
-    // Keep canvas sharp on resize and DPI changes
-    function resize() {
-      r.resizeDrawingSurfaceToCanvas();
+function computeSize() {
+  riveInstance.resizeDrawingSurfaceToCanvas();
+}
+
+// Subscribe to window size changes and update call `resizeDrawingSurfaceToCanvas`
+window.onresize = computeSize;
+
+// Subscribe to devicePixelRatio changes and call `resizeDrawingSurfaceToCanvas`
+window
+  .matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
+  .addEventListener("change", computeSize);
+
+const riveInstance = new rive.Rive({
+  src: 'richardhome.riv',
+  canvas: document.getElementById('rive-canvas'),
+  autoplay: true,
+  autoBind: true,
+  stateMachines: 'State Machine 1',
+  artboard: 'Dashboard',
+  layout: layout,            // ← add this back
+  onLoad: function () {
+    const vmi = riveInstance.viewModelInstance;
+    const trigProperty = vmi.trigger('trig');
+
+    function copyEmail() {
+      navigator.clipboard.writeText('richard@studiobo.io');
     }
-    window.addEventListener('resize', resize);
-    matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
-      .addEventListener('change', resize);
-  </script>
+
+    trigProperty.on(copyEmail);
+    riveInstance.resizeDrawingSurfaceToCanvas();
+  },
+});
+
+</script>
 </body>
 </html>
