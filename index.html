@@ -1,73 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RB</title>
-<style>
-body {
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Home of Richard Bolland</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    /* Move inline styles to CSS for clarity */
+    #rive-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #FFF; /* optional, keeps prior white background */
+    }
+  </style>
 </head>
 
 <body>
-  <canvas
-  style="
-    position: absolute;
-    height: 100%;
-    width: 100%;
-  "
-  id="rive-canvas"
-></canvas>
+  <canvas id="rive-canvas"></canvas>
 
-<script src="https://unpkg.com/@rive-app/webgl2"></script>
-<script>
-// The layout of the graphic will adhere to
-const layout = new rive.Layout({
-  fit: rive.Fit.Layout,
-  layoutScaleFactor: 1, // when using `Fit.Layout`. This allows you to resize the layout as needed.
-});
+  <!-- Pin major version; avoid surprise breaking changes -->
+  <script src="https://unpkg.com/@rive-app/webgl2@2" crossorigin="anonymous"></script>
+  <script>
+    // Layout with lowercase 'layout' (fallback added for older runtimes)
+    const layout = new rive.Layout({
+      fit: rive.Fit.layout || rive.Fit.Layout,
+      layoutScaleFactor: 1,
+    });
 
-// ---------------------------------
-// HTML Canvas element to render to
-const riveCanvas = document.getElementById("rive-canvas");
+    // Single canvas ref
+    const canvas = document.getElementById('rive-canvas');
 
-function computeSize() {
-  riveInstance.resizeDrawingSurfaceToCanvas();
-}
-
-// Subscribe to window size changes and update call `resizeDrawingSurfaceToCanvas`
-window.onresize = computeSize;
-
-// Subscribe to devicePixelRatio changes and call `resizeDrawingSurfaceToCanvas`
-window
-  .matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
-  .addEventListener("change", computeSize);
-
-const riveInstance = new rive.Rive({
-  src: 'richardhome.riv',
-  canvas: document.getElementById('rive-canvas'),
-  autoplay: true,
-  autoBind: true,
-  stateMachines: 'State Machine 1',
-  artboard: 'Dashboard',
-  layout: layout,            // ← add this back
-  onLoad: function () {
-    const vmi = riveInstance.viewModelInstance;
-    const trigProperty = vmi.trigger('trig');
-
-    function copyEmail() {
-      navigator.clipboard.writeText('richard@studiobo.io');
+    // Throttled resize (prevents hammering during drag)
+    let rafId = null;
+    function computeSize() {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        if (riveInstance) riveInstance.resizeDrawingSurfaceToCanvas();
+        rafId = null;
+      });
     }
 
-    trigProperty.on(copyEmail);
-    riveInstance.resizeDrawingSurfaceToCanvas();
-  },
-});
+    // Window resize
+    window.addEventListener('resize', computeSize);
 
-</script>
+    // devicePixelRatio change listener with fallback (Safari/older)
+    const mql = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    if (mql.addEventListener) mql.addEventListener('change', computeSize);
+    else if (mql.addListener) mql.addListener(computeSize);
+
+    // Create the Rive instance
+    const riveInstance = new rive.Rive({
+      src: 'richardhome.riv',
+      canvas: canvas,
+      autoplay: true,
+      autoBind: true,
+      stateMachines: 'State Machine 1',
+      artboard: 'Dashboard',
+      layout: layout,
+      onLoad: function () {
+        // Wire up the trigger safely
+        const vmi = riveInstance.viewModelInstance;
+        const trigProperty = vmi && vmi.trigger && vmi.trigger('trig');
+
+        function copyEmail() {
+          navigator.clipboard.writeText('richard@studiobo.io').catch(console.warn);
+        }
+
+        if (trigProperty && typeof trigProperty.on === 'function') {
+          trigProperty.on(copyEmail);
+        } else {
+          console.warn('Trigger "trig" not found.');
+        }
+
+        // Initial crisp resize
+        riveInstance.resizeDrawingSurfaceToCanvas();
+      },
+    });
+  </script>
 </body>
 </html>
