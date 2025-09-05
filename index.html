@@ -11,14 +11,13 @@
       margin: 0;
       padding: 0;
     }
-    /* Move inline styles to CSS for clarity */
     #rive-canvas {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       display: block;
-      background: #FFF; /* optional, keeps prior white background */
+      background: #FFF;
     }
   </style>
 </head>
@@ -29,16 +28,13 @@
   <!-- Pin major version; avoid surprise breaking changes -->
   <script src="https://unpkg.com/@rive-app/webgl2@2" crossorigin="anonymous"></script>
   <script>
-    // Layout with lowercase 'layout' (fallback added for older runtimes)
     const layout = new rive.Layout({
       fit: rive.Fit.layout || rive.Fit.Layout,
       layoutScaleFactor: 1,
     });
 
-    // Single canvas ref
     const canvas = document.getElementById('rive-canvas');
 
-    // Throttled resize (prevents hammering during drag)
     let rafId = null;
     function computeSize() {
       if (rafId) return;
@@ -48,15 +44,12 @@
       });
     }
 
-    // Window resize
     window.addEventListener('resize', computeSize);
 
-    // devicePixelRatio change listener with fallback (Safari/older)
     const mql = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
     if (mql.addEventListener) mql.addEventListener('change', computeSize);
     else if (mql.addListener) mql.addListener(computeSize);
 
-    // Create the Rive instance
     const riveInstance = new rive.Rive({
       src: 'richardhome.riv',
       canvas: canvas,
@@ -66,19 +59,45 @@
       artboard: 'Dashboard',
       layout: layout,
       onLoad: function () {
-        // Wire up the trigger safely
         const vmi = riveInstance.viewModelInstance;
-        const trigProperty = vmi && vmi.trigger && vmi.trigger('trig');
 
-        function copyEmail() {
-          navigator.clipboard.writeText('richard@studiobo.io').catch(console.warn);
+        // Helper to attach triggers
+        function bindTrigger(name, action) {
+          const prop = vmi && vmi.trigger && vmi.trigger(name);
+          if (prop && typeof prop.on === 'function') {
+            prop.on(action);
+          } else {
+            console.warn(`Trigger "${name}" not found.`);
+          }
         }
 
-        if (trigProperty && typeof trigProperty.on === 'function') {
-          trigProperty.on(copyEmail);
-        } else {
-          console.warn('Trigger "trig" not found.');
-        }
+        // Email trigger
+        bindTrigger('trig', () => {
+          navigator.clipboard.writeText('richard@studiobo.io')
+            .catch(console.warn);
+        });
+
+        // BlueSky trigger with 0.5s delay
+        bindTrigger('blueSky', () => {
+          setTimeout(() => {
+            window.open(
+              'https://bsky.app/profile/studiobolland.bsky.social',
+              '_blank',
+              'noopener,noreferrer'
+            );
+          }, 500);
+        });
+
+        // LinkedIn trigger with 0.5s delay
+        bindTrigger('linkedIn', () => {
+          setTimeout(() => {
+            window.open(
+              'https://www.linkedin.com/in/richardbolland/',
+              '_blank',
+              'noopener,noreferrer'
+            );
+          }, 500);
+        });
 
         // Initial crisp resize
         riveInstance.resizeDrawingSurfaceToCanvas();
