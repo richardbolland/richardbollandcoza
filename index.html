@@ -18,6 +18,31 @@
       height: 100%;
       display: block;
       background: #FFF;
+      /* Ensure canvas stays in the background */
+      z-index: 1; 
+    }
+    
+    /* New Button Styles */
+    .privacy-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px; /* Places it in the bottom right corner */
+      z-index: 10; /* Ensures it sits ON TOP of the Rive file */
+      
+      text-decoration: none;
+      color: #333;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background-color 0.2s;
+    }
+
+    .privacy-btn:hover {
+      background-color: #fff;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
   </style>
 </head>
@@ -25,7 +50,8 @@
 <body>
   <canvas id="rive-canvas"></canvas>
 
-  <!-- Pin major version; avoid surprise breaking changes -->
+  <a href="/privacy-policy" class="privacy-btn">Privacy Policy</a>
+
   <script src="https://unpkg.com/@rive-app/webgl2@2" crossorigin="anonymous"></script>
   <script>
     const layout = new rive.Layout({
