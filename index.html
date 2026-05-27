@@ -85,49 +85,29 @@
       artboard: 'Dashboard',
       layout: layout,
       onLoad: function () {
-        const vmi = riveInstance.viewModelInstance;
-
-        // Helper to attach triggers
-        function bindTrigger(name, action) {
-          const prop = vmi && vmi.trigger && vmi.trigger(name);
-          if (prop && typeof prop.on === 'function') {
-            prop.on(action);
-          } else {
-            console.warn(`Trigger "${name}" not found.`);
-          }
-        }
-
-        // Email trigger
-        bindTrigger('trig', () => {
-          navigator.clipboard.writeText('richard@studiobo.io')
-            .catch(console.warn);
-        });
-
-        // BlueSky trigger with 0.5s delay
-        bindTrigger('blueSky', () => {
-          setTimeout(() => {
-            window.open(
-              'https://bsky.app/profile/studiobolland.bsky.social',
-              '_blank',
-              'noopener,noreferrer'
-            );
-          }, 500);
-        });
-
-        // LinkedIn trigger with 0.5s delay
-        bindTrigger('linkedIn', () => {
-          setTimeout(() => {
-            window.open(
-              'https://www.linkedin.com/in/richardbolland/',
-              '_blank',
-              'noopener,noreferrer'
-            );
-          }, 500);
-        });
-
         // Initial crisp resize
         riveInstance.resizeDrawingSurfaceToCanvas();
       },
+    });
+
+    // Listen for Rive Events fired from the artboard
+    riveInstance.on(rive.EventType.RiveEvent, (event) => {
+      const eventName = event.data.name;
+
+      switch (eventName) {
+        case 'WildGuess':
+          window.open('https://www.wildguess.co.za/', '_blank', 'noopener,noreferrer');
+          break;
+        case 'LongJump':
+          window.open('https://www.longjump.co.za/', '_blank', 'noopener,noreferrer');
+          break;
+        case 'StudioBo':
+          window.open('https://www.studiobo.io/', '_blank', 'noopener,noreferrer');
+          break;
+        case 'Linkedin':
+          window.open('https://www.linkedin.com/in/richardbolland/', '_blank', 'noopener,noreferrer');
+          break;
+      }
     });
   </script>
 </body>
