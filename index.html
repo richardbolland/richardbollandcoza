@@ -108,7 +108,8 @@
           window.open('https://www.linkedin.com/in/richardbolland/', '_blank', 'noopener,noreferrer');
           break;
         case 'Email':
-          window.location.href = 'mailto:richard@studiobo.io';
+          navigator.clipboard.writeText('richard@studiobo.io')
+            .catch(console.warn);
           break;
       }
     });
